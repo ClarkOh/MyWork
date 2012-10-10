@@ -23,7 +23,7 @@ from cxLog          import cxLog
 import sys
 import codecs
 
-def templateBlockRequest( obj, paramList, errLog ) :
+def templateBlockRequest( obj, paramList, resultFile, errLog ) :
     """
     for param in paramList :
         try :
@@ -33,8 +33,8 @@ def templateBlockRequest( obj, paramList, errLog ) :
             return []
     """
 
-    result = templateSetInputValue( obj, paramList, errLog ) 
-    print 'result:',result
+    if templateSetInputValue( obj, paramList, errLog ) != 0 :
+        return []
 
     bContinue = 1
     resultList = []
@@ -49,7 +49,8 @@ def templateBlockRequest( obj, paramList, errLog ) :
         result = obj.getResult()
         resultList.append(result)
 
-        #print getValueString(result[6])
+        if resultFile != None :
+            resultFile.write(getValueString(result[6]))
 
         nDibStatus = result[0]
         if ( nDibStatus == -1 ) or ( nDibStatus == 1 ): #-1 : error, 1 : waiting
@@ -204,39 +205,39 @@ param = [ [ 0, 'A000660' ] ,
 """
 def templateSetInputValue( obj, paramList, errLog ) :
 
-    returnValue = 0
+    eCodeDic = { 'OK' : 0 , 'cxError' : -1, 'UnknownError' : -2 }
 
     for param in paramList :
         if len(param) >= 3 :
             try :
-                print param[0],'{',param[1:],'}'
-                returnValue = obj.SetInputValue( param[0], param[1:] )
+                print 'param',param[1:]
+                obj.SetInputValue( param[0], param[1:] )
             except cxError as e :
-                print (u'%s.SetInputValue:%s'%(obj.__class__.__name__, e.desc))
                 if errLog != None : 
                     errLog.write(u'%s.SetInputValue:%s'%(obj.__class__.__name__, e.desc))
                                                     
-                return returnValue
+                return eCodeDic['cxError']
             except :
-                return returnValue
+                return eCodeDic['UnknownError']
         else :
             try :
-                print param[0],':',param[1]
-                returnValue = obj.SetInputValue( param[0], param[1] )
+                obj.SetInputValue( param[0], param[1] )
             except cxError as e :
-                print (u'%s.SetInputValue:%s'%(obj.__class__.__name__, e.desc))
                 if errLog != None : 
                     errLog.write(u'%s.SetInputValue:%s'%(obj.__class__.__name__, e.desc))
                                                     
-                return returnValue
+                return eCodeDic['cxError']
             except :
-                return returnValue
+                return eCodeDic['UnknownError']
 
-    return returnValue
+    return eCodeDic['OK']
+
+
 
 def test_cpStockChart() :
     cpClsDic = getCybosPlusClassDic()
     clsName = 'cxStockChart'
+    """
     try :
         cpClsDic[clsName].SetInputValue(0,'A000660')
     except KeyError :
@@ -248,14 +249,26 @@ def test_cpStockChart() :
     except KeyError :
         print "\'%s\' is not key in CybosPlus Class Dic."%(clsName)
         print 'Please, check the class name in cxCybosPlus.py again.'
+    """
+    paramList = [ [ 0, 'A000660' ],
+                  [ 1, ord('1') ],
+                  [ 2, 20121010 ],
+                  [ 3, 20120901 ],
+                  [ 5, 0, 1, 2, 3, 4, 6, 8, 13, 17 ],
+                  [ 4, 9 ], # len([0, 1, 2, 3, 4, 6, 8, 13, 17])
+                  [ 6, ord('D') ],
+                  [10, ord('3') ] ]
 
-    
+    resultList = templateBlockRequest( cpClsDic[clsName] , paramList, sys.stdout, sys.stdout )
+
+    print resultList
 
 
     del cpClsDic
 
 def test_cpStockMsts() :
-    errLog = cxLog()
+    resultFile = cxLog()
+    errLog = sys.stdout 
     stockHistory = cxStockHistory()
     stockMgr = cxStockMgr()
 
@@ -270,12 +283,20 @@ def test_cpStockMsts() :
             param.append( [ 0, stockCodeList ] )
             #print stockCodeList
             #test_BlockRequest( stockHistory.cpStockMst2, param )
-            resultList = templateBlockRequest( stockHistory.cpStockMst2, param, errLog )
+            resultList = templateBlockRequest( stockHistory.cpStockMst2, param, resultFile, errLog )
             stockCodeList = u''
         else :
             stockCodeList += stockMgr.stockList[i][0] + u','
 
-    errLog.close()
+    for i in range(0, len(stockMgr.stockList)):
+        resultFile.write(u'%d:%s %s'%(i,stockMgr.stockList[i][0],stockMgr.stockList[i][1]))
+
+    if errLog != sys.stdout :
+        errLog.close()
+
+    if resultFile != sys.stdout :
+        resultFile.close()
+
     del stockMgr
     del stockHistory
 
@@ -328,8 +349,8 @@ def test_cpStockMst2() :
 
 def test() :
 #    test_cpStockMst2()
-    test_cpStockMsts()
-#    test_cpStockChart()
+#    test_cpStockMsts()
+    test_cpStockChart()
 
 def collect_and_show_garbage() :
     "Show what garbage is present."

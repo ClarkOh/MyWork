@@ -2176,6 +2176,106 @@ class cxStockUniBid(cxCybosBaseWithEvent) :
 
 class cxStockChart(cxCybosBaseWithEvent) :
 
+    headerIndexDic = {
+        0 : [u'string', u'종목코드' ] ,
+        1 : [u'short', u'필드개수' ] ,
+        2 : [u'string array'], u'필드명의 배열' ],
+        3 : [u'long', u'수신개수' ],
+        4 : [u'ushort', u'마지막봉틱수' ] ,
+        5 : [u'ulong', u'최근거래일: YYYYMMDD' ],
+        6 : [u'ulong or float', u'전일종가' ] ,
+        7 : [u'ulong or float', u'현재가' ],
+        8 : [u'char', u'대비부호' ] ,
+        9 : [u'long or float', u'대비' ],
+
+10 - 거래량(ulong or ulonglong)
+
+11 - 매도호가(ulong or float)
+
+12 - 매수호가(ulong or float)
+
+13 - 시가(ulong or float)
+
+14 - 고가(ulong or float)
+
+15 - 저가(ulong or float)
+
+16 - 거래대금(ulonglong)
+
+17 - 종목상태(char)
+
+18 - 상장주식수(ulonglong)
+
+19 - 자본금[백만원](ulong)
+
+20 - 전일거래량(ulong or ulonglong)
+
+21 - 최근갱신시간(ulong): hhmm
+
+22 - 상한가(ulong or float)
+
+23 - 하한가(ulong or float)
+
+    }
+
+    dataIndexDic = {
+0: 날짜(ulong)
+
+1:시간(long) - hhmm
+
+2:시가(long or float)
+
+3:고가(long or float)
+
+4:저가(long or float)
+
+5:종가(long or float)
+
+6:전일대비(long or float) - 주) 대비부호(37)과 반드시 같이 요청해야 함
+
+8:거래량(ulong or ulonglong) 주) 정밀도 만원 단위
+
+9:거래대금(ulonglong)
+
+10:누적체결매도수량(ulong or ulonglong) - 호가비교방식 누적체결매도수량
+11:누적체결매수수량(ulong or ulonglong) - 호가비교방식 누적체결매수수량
+ (주) 10, 11 필드는 분,틱 요청일 때만 제공
+
+12:상장주식수(ulonglong)
+
+13:시가총액(ulonglong)
+
+14:외국인주문한도수량(ulong)
+
+15:외국인주문가능수량(ulong)
+
+16:외국인현보유수량(ulong)
+
+17:외국인현보유비율(float)
+
+18:수정주가일자(ulong) - YYYYMMDD
+
+19:수정주가비율(float)
+
+20:기관순매수(long)
+
+21:기관누적순매수(long)
+
+22:등락주선(long)
+
+23:등락비율(float)
+
+24:예탁금(ulonglong)
+
+25:주식회전율(float)
+
+26:거래성립률(float)
+
+37:대비부호(char) - 수신값은 GetHeaderValue 8 대비부호와 동일
+
+
+    }
+
     def __init__(self) :
         cxCybosBaseWithEvent.__init__(self,'CpSysDib.StockChart')
 
