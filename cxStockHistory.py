@@ -15,7 +15,8 @@
 from cxCybosPlus    import cxCpStockMst
 from cxCybosPlus    import cxCpStockMstM
 from cxCybosPlus    import cxCpStockMst2
-from cxCybosPlus    import cxStockChart
+from cxCybosPlus    import getCybosPlusClassDic
+
 from cxStockMgr     import cxStockMgr
 from cxError        import cxError
 from cxLog          import cxLog
@@ -23,13 +24,17 @@ import sys
 import codecs
 
 def templateBlockRequest( obj, paramList, errLog ) :
-
+    """
     for param in paramList :
         try :
             obj.SetInputValue( param[0], param[1] )
         except cxError as e :
             errLog.write(u'%s.SetInputValue:%s'%(obj.__class__.__name__,e.desc))
             return []
+    """
+
+    result = templateSetInputValue( obj, paramList, errLog ) 
+    print 'result:',result
 
     bContinue = 1
     resultList = []
@@ -184,6 +189,71 @@ def test_BlockRequest( obj, prm ) :
         print getTitleString(obj.dataIndexDic)
         print getValueString(resultList[6])
 
+def dumpDic( dic ) :
+    for key in dic.keys() :
+        print '\t%s = {'%(key)
+        print '\t\t',dic[key] 
+        print '\t}'
+
+"""
+param = [ [ 0, 'A000660' ] , 
+          [ 1, '1'], 
+          [ 2, 20121010 ], 
+          [ 3, 20120901 ],
+          [ 4, 
+"""
+def templateSetInputValue( obj, paramList, errLog ) :
+
+    returnValue = 0
+
+    for param in paramList :
+        if len(param) >= 3 :
+            try :
+                print param[0],'{',param[1:],'}'
+                returnValue = obj.SetInputValue( param[0], param[1:] )
+            except cxError as e :
+                print (u'%s.SetInputValue:%s'%(obj.__class__.__name__, e.desc))
+                if errLog != None : 
+                    errLog.write(u'%s.SetInputValue:%s'%(obj.__class__.__name__, e.desc))
+                                                    
+                return returnValue
+            except :
+                return returnValue
+        else :
+            try :
+                print param[0],':',param[1]
+                returnValue = obj.SetInputValue( param[0], param[1] )
+            except cxError as e :
+                print (u'%s.SetInputValue:%s'%(obj.__class__.__name__, e.desc))
+                if errLog != None : 
+                    errLog.write(u'%s.SetInputValue:%s'%(obj.__class__.__name__, e.desc))
+                                                    
+                return returnValue
+            except :
+                return returnValue
+
+    return returnValue
+
+def test_cpStockChart() :
+    cpClsDic = getCybosPlusClassDic()
+    clsName = 'cxStockChart'
+    try :
+        cpClsDic[clsName].SetInputValue(0,'A000660')
+    except KeyError :
+        print "\'%s\' is not key in CybosPlus Class Dic."%(clsName)
+        print 'Please, check the class name in cxCybosPlus.py again.'
+
+    try :
+        cpClsDic[clsName].SetInputValue(1,'1')
+    except KeyError :
+        print "\'%s\' is not key in CybosPlus Class Dic."%(clsName)
+        print 'Please, check the class name in cxCybosPlus.py again.'
+
+    
+
+
+    del cpClsDic
+
 def test_cpStockMsts() :
     errLog = cxLog()
     stockHistory = cxStockHistory()
@@ -259,6 +329,7 @@ def test_cpStockMst2() :
 def test() :
 #    test_cpStockMst2()
     test_cpStockMsts()
+#    test_cpStockChart()
 
 def collect_and_show_garbage() :
     "Show what garbage is present."
