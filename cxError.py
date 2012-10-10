@@ -30,9 +30,12 @@ def convert2unicode( text ) :
         try :
             result = unicode(text, 'cp949').encode('utf8')
         except UnicodeError :       #UnicodeEncodeError
+            return None
+            """
             try : result = unicode(text, 'euc-kr').encode('utf8')
             except UnicodeError :   #UnicodeEncodeError
                 return None 
+            """
         return result
     else : return unicode(text)
 
@@ -50,7 +53,9 @@ class cxError(Exception) :
             tmpCategory = convert2unicode(category)
             if tmpCategory is None : tmpCategory = u''
         if desc != None :
+            print desc
             tmpDesc = convert2unicode(desc)
+            print tmpDesc
             if tmpDesc is None : tmpDesc = u''
         if detail_desc != None :
             tmpMore = convert2unicode(detail_desc)

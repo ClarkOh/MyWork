@@ -2179,7 +2179,7 @@ class cxStockChart(cxCybosBaseWithEvent) :
     headerIndexDic = {
         0 : [u'string', u'종목코드' ] ,
         1 : [u'short', u'필드개수' ] ,
-        2 : [u'string array'], u'필드명의 배열' ],
+        2 : [u'string array', u'필드명의 배열' ],
         3 : [u'long', u'수신개수' ],
         4 : [u'ushort', u'마지막봉틱수' ] ,
         5 : [u'ulong', u'최근거래일: YYYYMMDD' ],
@@ -2187,93 +2187,50 @@ class cxStockChart(cxCybosBaseWithEvent) :
         7 : [u'ulong or float', u'현재가' ],
         8 : [u'char', u'대비부호' ] ,
         9 : [u'long or float', u'대비' ],
-
-10 - 거래량(ulong or ulonglong)
-
-11 - 매도호가(ulong or float)
-
-12 - 매수호가(ulong or float)
-
-13 - 시가(ulong or float)
-
-14 - 고가(ulong or float)
-
-15 - 저가(ulong or float)
-
-16 - 거래대금(ulonglong)
-
-17 - 종목상태(char)
-
-18 - 상장주식수(ulonglong)
-
-19 - 자본금[백만원](ulong)
-
-20 - 전일거래량(ulong or ulonglong)
-
-21 - 최근갱신시간(ulong): hhmm
-
-22 - 상한가(ulong or float)
-
-23 - 하한가(ulong or float)
-
+        10 : [u'ulong or ulonglong', u'거래량' ],
+        11 : [u'ulong or float', u'매도호가' ],
+        12 : [u'ulong or float', u'매수호가'],
+        13 : [u'ulong or float', u'시가'],
+        14 : [u'ulong or float', u'고가'],
+        15 : [u'ulong or float', u'저가'],
+        16 : [u'ulonglong', u'거래대금'],
+        17 : [u'char', u'종목상태'],
+        18 : [u'ulonglong', u'상장주식수'],
+        19 : [u'ulong', u'자본금[백만원]'],
+        20 : [u'ulong or ulonglong', u'전일거래량'],
+        21 : [u'ulong', u'최근갱신시간: hhmm'],
+        22 : [u'ulong or float', u'상한가'],
+        23 : [u'ulong or float', u'하한가']
     }
 
     dataIndexDic = {
-0: 날짜(ulong)
-
-1:시간(long) - hhmm
-
-2:시가(long or float)
-
-3:고가(long or float)
-
-4:저가(long or float)
-
-5:종가(long or float)
-
-6:전일대비(long or float) - 주) 대비부호(37)과 반드시 같이 요청해야 함
-
-8:거래량(ulong or ulonglong) 주) 정밀도 만원 단위
-
-9:거래대금(ulonglong)
-
-10:누적체결매도수량(ulong or ulonglong) - 호가비교방식 누적체결매도수량
-11:누적체결매수수량(ulong or ulonglong) - 호가비교방식 누적체결매수수량
- (주) 10, 11 필드는 분,틱 요청일 때만 제공
-
-12:상장주식수(ulonglong)
-
-13:시가총액(ulonglong)
-
-14:외국인주문한도수량(ulong)
-
-15:외국인주문가능수량(ulong)
-
-16:외국인현보유수량(ulong)
-
-17:외국인현보유비율(float)
-
-18:수정주가일자(ulong) - YYYYMMDD
-
-19:수정주가비율(float)
-
-20:기관순매수(long)
-
-21:기관누적순매수(long)
-
-22:등락주선(long)
-
-23:등락비율(float)
-
-24:예탁금(ulonglong)
-
-25:주식회전율(float)
-
-26:거래성립률(float)
-
-37:대비부호(char) - 수신값은 GetHeaderValue 8 대비부호와 동일
-
-
+        0: [u'ulong', u'날짜'],
+        1: [u'long', u'시간: hhmm'],
+        2: [u'long or float', u'시가'],
+        3: [u'long or float', u'고가'],
+        4: [u'long or float', u'저가'],
+        5: [u'long or float', u'종가'],
+        6: [u'long or float', u'전일대비'],
+        8: [u'ulong or ulonglong', u'거래량 (만원 단위)' ],
+        9: [u'ulonglong', u'거래대금'],
+        10: [u'ulong or ulonglong', u'누적체결매도수량'],
+        11: [u'ulong or ulonglong', u'누적체결매수수량'],
+        12: [u'ulonglong', u'상장주식수'],
+        13: [u'ulonglong', u'시가총액'],
+        14: [u'ulong', u'외국인주문한도수량'],
+        15: [u'ulong', u'외국인주문가능수량'],
+        16: [u'ulong', u'외국인현보유수량'],
+        17: [u'float', u'외국인현보유비율'],
+        18: [u'ulong', u'수정주가일자: YYYYMMDD'],
+        19: [u'float', u'수정주가비율'],
+        20: [u'long', u'기관순매수'],
+        21: [u'long', u'기관누적순매수'],
+        22: [u'long', u'등락주선'],
+        23: [u'float', u'등락비율'],
+        24: [u'ulonglong', u'예탁금'],
+        25: [u'float', u'주식회전율'],
+        26: [u'float', u'거래성립률'],
+        37: [u'char', u'대비부호']
     }
 
     def __init__(self) :
@@ -2282,10 +2239,48 @@ class cxStockChart(cxCybosBaseWithEvent) :
     def open(self) :
         cxCybosBaseWithEvent.open(self, self.__on_received)
 
+    def get_header_value_list(self) :
+        valueList = []
+        if self.headerIndexDic == None or \
+            len(self.headerIndexDic) == 0 : return []
+
+        dic = self.headerIndexDic
+        tmpDic = {}
+        for key in dic.keys() :
+            tmpDic[key] = dic[key] + [ self.GetHeaderValue(key) ]
+        valueList.append(tmpDic)
+        return valueList
+
+    def get_data_value_list(self, countIndex) :
+        dataValueList = []
+        tmpList = []
+        count = self.GetHeaderValue(countIndex)
+        for i in range(0, count ) :
+            tmpDic = {}
+            for key in self.dataIndexDic.keys() :
+                tmpDic[key] = self.dataIndexDic[key] + [ self.GetDataValue( key, i ) ]
+            dataValueList.append(tmpDic)
+        return dataValueList
+
+    def getResult(self) :
+        result = \
+            [       
+                self.GetDibStatus(),                # status
+                self.GetDibMsg1(),                  # order result
+                self.Continue(),
+                unicode(time.ctime()),
+                self.__class__.__name__,            
+                self.get_header_value_list(),
+                self.get_data_value_list(3)
+            ]
+        return result
+
     def __on_received(self, args) :
         cxCybosBaseWithEvent.on_received(self, args)
         print 'cxStockChart.__on_received'
         # TODO : DO SOMETHING FROM HERE
+        if self.result_ch is not None :
+            self.set_result(self.getResult())
 
 
 class cxCpMarketWatch(cxCybosBaseWithEvent) :

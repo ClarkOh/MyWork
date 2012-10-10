@@ -22,6 +22,16 @@ from cxError        import cxError
 from cxLog          import cxLog
 import sys
 import codecs
+import win32console
+
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
+
+#win32console.SetConsoleCP(65001)
+#win32console.SetConsoleOutputCP(65001)
+
+#sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+#sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 
 def templateBlockRequest( obj, paramList, resultFile, errLog ) :
     """
@@ -33,6 +43,8 @@ def templateBlockRequest( obj, paramList, resultFile, errLog ) :
             return []
     """
 
+    print u'안녕하세요'
+
     if templateSetInputValue( obj, paramList, errLog ) != 0 :
         return []
 
@@ -43,6 +55,8 @@ def templateBlockRequest( obj, paramList, resultFile, errLog ) :
         try :
             obj.BlockRequest()
         except cxError as e :
+            print e.desc
+            print e
             errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, e.desc))
             return []
 
