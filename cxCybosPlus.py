@@ -2182,7 +2182,7 @@ class cxStockChart(cxCybosBaseWithEvent) :
         2 : [u'string array', u'필드명의 배열' ],
         3 : [u'long', u'수신개수' ],
         4 : [u'ushort', u'마지막봉틱수' ] ,
-        5 : [u'ulong', u'최근거래일: YYYYMMDD' ],
+        5 : [u'ulong', u'최근거래일 (YYYYMMDD)' ],
         6 : [u'ulong or float', u'전일종가' ] ,
         7 : [u'ulong or float', u'현재가' ],
         8 : [u'char', u'대비부호' ] ,
@@ -2196,16 +2196,16 @@ class cxStockChart(cxCybosBaseWithEvent) :
         16 : [u'ulonglong', u'거래대금'],
         17 : [u'char', u'종목상태'],
         18 : [u'ulonglong', u'상장주식수'],
-        19 : [u'ulong', u'자본금[백만원]'],
+        19 : [u'ulong', u'자본금 (백만원)'],
         20 : [u'ulong or ulonglong', u'전일거래량'],
-        21 : [u'ulong', u'최근갱신시간: hhmm'],
+        21 : [u'ulong', u'최근갱신시간 (hhmm)'],
         22 : [u'ulong or float', u'상한가'],
         23 : [u'ulong or float', u'하한가']
     }
 
     dataIndexDic = {
         0: [u'ulong', u'날짜'],
-        1: [u'long', u'시간: hhmm'],
+        1: [u'long', u'시간 (hhmm)'],
         2: [u'long or float', u'시가'],
         3: [u'long or float', u'고가'],
         4: [u'long or float', u'저가'],
@@ -2221,7 +2221,7 @@ class cxStockChart(cxCybosBaseWithEvent) :
         15: [u'ulong', u'외국인주문가능수량'],
         16: [u'ulong', u'외국인현보유수량'],
         17: [u'float', u'외국인현보유비율'],
-        18: [u'ulong', u'수정주가일자: YYYYMMDD'],
+        18: [u'ulong', u'수정주가일자 (YYYYMMDD)'],
         19: [u'float', u'수정주가비율'],
         20: [u'long', u'기관순매수'],
         21: [u'long', u'기관누적순매수'],
