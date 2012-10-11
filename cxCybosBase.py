@@ -38,7 +38,7 @@ class cxCybosBase :
         try:
             self.com_cp = Dispatch(com_cp_str)
         except pythoncom.com_error, (hr, msg, exc, arg) :
-            raise cxError(hr,'COM',hr,'check whether cybos plus running or not')
+            raise cxError(hr,'COM',msg,'check whether cybos plus running or not')
 
     def __del__(self):
         if self.com_cp != None:
@@ -131,7 +131,6 @@ class cxCybosBaseWithEvent :
             self.com_cp = DispatchWithEvents(   com_cp_str,\
                                                 cxCybosBaseWithEvent.cxEvent )
         except pythoncom.com_error, (hr, msg, exc, arg) :
-            print msg
             raise cxError(hr,'COM',msg,'check whether cybos plus running or not')
 
     def __del__(self):
@@ -209,9 +208,9 @@ class cxCybosBaseWithEvent :
 
     # Parameter Input Methods...
 
-    def SetInputValue(self,type,value):
+    def SetInputValue(self,Type,value):
         if self.com_cp != None:
-            self.com_cp.SetInputValue(type,value)
+            self.com_cp.SetInputValue(Type,value)
 
     # Data Requesting Methods...
 
@@ -250,10 +249,6 @@ class cxCybosBaseWithEvent :
             try:
                 return self.com_cp.BlockRequest()
             except pythoncom.com_error, (hr, msg, exc, arg) :
-                #print hr
-                #print msg
-                #print exc
-                #print arg
                 raise cxError(hr,'COM',msg,'check the connection and support of this method \"BlockRequest\"')
         else :
             raise cxError(10,'cxCybosBaseWithEvent','com_cp is None','')
@@ -269,19 +264,19 @@ class cxCybosBaseWithEvent :
 
     # rxed Data Retreiving Methods...
 
-    def GetHeaderValue(self,type):
+    def GetHeaderValue(self,Type):
         if self.com_cp != None:
             try:
-                return self.com_cp.GetHeaderValue(type)
+                return self.com_cp.GetHeaderValue(Type)
             except pythoncom.com_error, (hr, msg, exc, arg) :
                 raise cxError(hr,'COM',msg,'check the connection and support of this method \"GetHeaderValue\"')
         else :
             raise cxError(10,'cxCybosBaseWithEvent','com_cp is None','')
 
-    def GetDataValue(self,type,index):
+    def GetDataValue(self,Type,index):
         if self.com_cp != None:
             try:
-                return self.com_cp.GetDataValue(type,index)
+                return self.com_cp.GetDataValue(Type,index)
             except pythoncom.com_error, (hr, msg, exc, arg) :
                 raise cxError(hr,'COM',msg,'check the connection and support of this method \"GetDataValue\"')
         else :
@@ -395,9 +390,9 @@ class cxCpFutureCode(cxCybosBase):
         if self.com_cp != None :
             return self.com_cp.GetCount()
 
-    def GetData(self,type,index):
+    def GetData(self,Type,index):
         if self.com_cp != None :
-            return self.com_cp.GetData(type,index)
+            return self.com_cp.GetData(Type,index)
 
 def test_cxCpStockCur():
     print 'test_cxCpStockCur'
@@ -427,7 +422,6 @@ def test_cxCpStockCur():
         cpStockCur.close()
 
     except cxError as e :
-        print e.dump()
         return
 
     del cpStockCur

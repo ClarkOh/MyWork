@@ -2233,6 +2233,36 @@ class cxStockChart(cxCybosBaseWithEvent) :
         37: [u'char', u'대비부호']
     }
 
+    fieldNameDic = {
+        u'날짜' : 0,
+        u'시간' : 1,
+        u'시가' : 2,
+        u'고가' : 3,
+        u'저가' : 4,
+        u'종가' : 5,
+        u'전일대비' : 6,
+        u'거래량' : 8,
+        u'거래대금' : 9,
+        u'누적체결매도수량' : 10,
+        u'누적체결매수수량' : 11,
+        u'상장주식수' : 12,
+        u'시가총액' : 13,
+        u'외국인주문한도수량' : 14,
+        u'외국인주문가능수량' : 15,
+        u'외국인현보유수량' : 16,
+        u'외국인현보유비율' : 17,
+        u'수정주가일자' : 18,
+        u'수정주가비율' : 19,
+        u'기관순매수량' : 20,
+        u'기관누적순매수량' : 21,
+        u'등락주선' : 22,
+        u'등락비율' : 23,
+        u'예탁금' :  24,
+        u'주식회전율' : 25,
+        u'거래성립률' : 26,
+        u'대비부호' : 37,
+    }
+
     def __init__(self) :
         cxCybosBaseWithEvent.__init__(self,'CpSysDib.StockChart')
 
@@ -2255,11 +2285,30 @@ class cxStockChart(cxCybosBaseWithEvent) :
         dataValueList = []
         tmpList = []
         count = self.GetHeaderValue(countIndex)
+        #print 'count', count
+        fieldNum = self.GetHeaderValue(1)
+        #print 'fieldNum', fieldNum
+        fieldNameList = self.GetHeaderValue(2)
+        #print 'fieldNameList', fieldNameList, len(fieldNameList)
         for i in range(0, count ) :
             tmpDic = {}
-            for key in self.dataIndexDic.keys() :
-                tmpDic[key] = self.dataIndexDic[key] + [ self.GetDataValue( key, i ) ]
+            for Type in range( 0, fieldNum ) :
+                key = self.fieldNameDic[fieldNameList[Type]]
+                #print Type,
+                #print self.GetDataValue(Type,i)
+                tmpDic[key] = self.dataIndexDic[key] + [ self.GetDataValue(Type, i ) ]
             dataValueList.append(tmpDic)
+        """
+        for i in range(0, count ) :
+            tmpDic = {}
+            for fieldName in fieldNameList : 
+                print fieldName,
+                key = self.fieldNameDic[fieldName]
+                print key,
+                print self.GetDataValue(key,i)
+                #tmpDic[key] = self.dataIndexDic[key] + [ self.GetDataValue( key, i ) ]
+            dataValueList.append(tmpDic)
+        """
         return dataValueList
 
     def getResult(self) :
@@ -4141,6 +4190,7 @@ def getCybosPlusClassDic( errLog = None ) :
         try : classDic[className] = classObj()
         except TypeError as e :
             if errLog != None : 
+                print 'e.message', e.message
                 errLog.write(u'%s : %s'%(className, convert2unicode(e.message)))
                 continue
         except : 

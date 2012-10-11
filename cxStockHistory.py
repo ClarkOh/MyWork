@@ -24,14 +24,22 @@ import sys
 import codecs
 import win32console
 
+from cxError        import convert2unicode
+
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
 
-#win32console.SetConsoleCP(65001)
+#win32console.SetConsoleCP(65001)        # utf-8 unicode
 #win32console.SetConsoleOutputCP(65001)
+
+#print 'Console CP : ', win32console.GetConsoleCP()
+#print 'ConsoleOutput CP : ', win32console.GetConsoleOutputCP()
 
 #sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 #sys.stderr = codecs.getwriter('utf8')(sys.stderr)
+
+#codecs.open(sys.stdout, 'utf8')
+#codecs.open(sys.stderr, 'utf8')
 
 def templateBlockRequest( obj, paramList, resultFile, errLog ) :
     """
@@ -55,16 +63,45 @@ def templateBlockRequest( obj, paramList, resultFile, errLog ) :
         try :
             obj.BlockRequest()
         except cxError as e :
-            print e.desc
-            print e
             errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, e.desc))
             return []
 
         result = obj.getResult()
+
+        
+        for headerData in result[5] :
+            for key in headerData.keys() :
+                print u'\t%s = {'%(key)
+                for item in headerData[key] :
+                    #print type(item)
+                    if type(item) == tuple :
+                        print '\t\t('
+                        for value in item :
+                            print u'\t\t\t%s'%(value)
+                        print '\t\t)'
+                    else :
+                        print u'\t\t%s'%(item)
+                print u'\t}'
+        
+        for data in result[6] :
+            for key in data.keys() :
+                print u'\t%s = {'%(key)
+                for item in data[key] :
+                    print type(item)
+                    if type(item) == tuple :
+                        print '('
+                        for value in item :
+                            print u'\t\t%s'%(value)
+                        print ')'
+                    else :
+                        print u'\t\t%s'%(item)
+                print u'\t}'
+         
         resultList.append(result)
 
         if resultFile != None :
             resultFile.write(getValueString(result[6]))
+
 
         nDibStatus = result[0]
         if ( nDibStatus == -1 ) or ( nDibStatus == 1 ): #-1 : error, 1 : waiting
@@ -82,7 +119,7 @@ def templateDumpResult( resultList, outputFile, errLog ) :
 """
 
 
-log = codecs.open('result__.txt','w','utf-8')
+#log = codecs.open('result__.txt','w','utf-8')
 
 class cxStockHistory :
     cpStockMst = cxCpStockMst()
@@ -264,19 +301,20 @@ def test_cpStockChart() :
         print "\'%s\' is not key in CybosPlus Class Dic."%(clsName)
         print 'Please, check the class name in cxCybosPlus.py again.'
     """
+    fieldList = [ 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11,12, 13, 14, 15, 16, 17, 18,19, 20, 21, 22,23, 24,25, 26, 37]        
+    print 'fieldLen', len(fieldList)
     paramList = [ [ 0, 'A000660' ],
                   [ 1, ord('1') ],
                   [ 2, 20121010 ],
                   [ 3, 20120901 ],
-                  [ 5, 0, 1, 2, 3, 4, 6, 8, 13, 17 ],
-                  [ 4, 9 ], # len([0, 1, 2, 3, 4, 6, 8, 13, 17])
+                  [ 5 ] + fieldList,
+                  [ 4, len(fieldList) ], # len([0, 1, 2, 3, 4, 6, 8, 13, 17])
                   [ 6, ord('D') ],
                   [10, ord('3') ] ]
 
-    resultList = templateBlockRequest( cpClsDic[clsName] , paramList, sys.stdout, sys.stdout )
-
-    print resultList
-
+#    resultList = templateBlockRequest( cpClsDic[clsName] , paramList, sys.stdout, sys.stdout )
+    resultList = templateBlockRequest( cpClsDic[clsName] , paramList, None, sys.stdout )
+#    print resultList
 
     del cpClsDic
 
