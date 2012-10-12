@@ -3,8 +3,8 @@
 
 
 # author      : Jinwon Oh
-# file name   : cxStockHistory.py
-# date        : 2012-10-11 17:55:40
+# file name   : dowhile.py
+# date        : 2012-09-03 21:50:04
 # ver         : 
 # desc.       : 
 # tab size    : set sw=4, ts=4
@@ -12,17 +12,30 @@
 
 # ADD CODES FROM HERE
 
-class cHello :
-	def __init__(self) :
-		print "hello"
-	def __del__(self) :
-		pass
+condition = 1
 
+def setCondition(value) :
+    global condition
+    condition = value
+
+def testCondition() :
+    print 'testing'
+    return condition
+
+def doSomeThing() :
+    print 'Hi'
+    return 1
+
+def doSomeThing2() :
+    print 'Bye'
 
 def test() :
-	hello = cHello()
-	del hello
-
+    
+    while doSomeThing() :
+        doSomeThing2()
+        setCondition(0)
+        testCondition == 0 :
+            break
 
 def collect_and_show_garbage() :
 	"Show what garbage is present."

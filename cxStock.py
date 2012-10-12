@@ -12,16 +12,32 @@
 
 # ADD CODES FROM HERE
 
+import sys
+from cxError import convert2unicode
+
 class cxStock :
-    def __init__(self) :
-        pass
+    def __init__(self, code = u'', name = u'', fullcode = u'') :
+        print name, type(name)
+        self.code = convert2unicode(code)
+        self.name = convert2unicode(name)
+        self.fullcode = convert2unicode(fullcode)
 
     def __del__(self) :
         pass
 
+    def dump(self) :
+        dumpStr = u'%s %s \'%s\''%(self.code, self.fullcode, self.name)
+        return dumpStr
+
 
 def test() :
-    stock = cxStock()
+    from cxFile import cxFile
+    resultFile = cxFile()
+    stock = cxStock('A153360','오진원','KR71521304506')
+   
+    resultFile.write(stock.dump())
+    resultFile.write(u'\n')
+    resultFile.close()
     del stock
 
 def collect_and_show_garbage() :

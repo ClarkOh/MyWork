@@ -12,10 +12,116 @@
 
 # ADD CODES FROM HERE
 
+import time
+import codecs
+import common
 
+class cxFile :
+    hFile = None
+    fileName = u''
 
-def test() :
-    historyFile = open(u'A000050_경방_T', 'r')
+    def __init__(self, fileName = u'result_%s.txt'%(unicode(time.strftime('%Y%m%d'))) ) :
+        self.fileName = fileName
+    
+    def __del__(self) :
+        pass
+
+    def open(self, mode = 'a' ) :
+        try :
+            self.hFile = codecs.open( self.fileName, mode, 'utf-8')
+        except BaseException as e :
+            print e
+            raise e
+        except :
+            print 'open : unknown error'
+            return False
+        return True
+
+    def close(self) :
+        if self.hFile != None :
+            self.hFile.close()
+            del self.hFile
+            self.hFile = None
+
+    def write(self, context ) :
+        writeString = context
+        if self.hFile == None :
+            try :
+                self.open()
+            except BaseException as e :
+                return False
+        elif self.hFile.closed == True :
+            try : self.open()
+            except BaseException as e : 
+                return False
+        elif self.hFile.closed == False and self.hFile.mode[0] == 'r' :
+            self.close()
+            try : self.open()
+            except BaseException as e :
+                return False
+
+        self.hFile.write( unicode(context) )
+        return True
+    
+    def readlines(self) :
+        if self.hFile == None :
+            self.open(mode = 'r')
+        elif self.hFile.closed == True :
+            try : self.open(mode = 'r')
+            except : return []
+        elif self.hFile.closed == False and self.hFile.mode[0] != 'r' :
+            self.close()
+            try : self.open(mode = 'r')
+            except : return []
+        self.hFile.seek(0,0)
+        return self.hFile.readlines()
+
+    def dump(self) :
+        for line in self.readlines() :
+            print line,
+
+    def close(self) :
+        if self.hFile != None :
+            self.hFile.close()
+
+def test_cxFile() :
+    resultFile = cxFile()
+    #resultFile.dump()
+    #print
+    resultFile.write(u'하이\n')
+    #resultFile.dump()
+    #print
+    #resultFile.close()
+    #for line in resultFile.readlines() :
+    #    print line
+    #print
+    resultFile.write('머지\n')
+    #resultFile.dump()
+    resultFile.close()
+
+def test_read_file( fileName ) :
+    import os, errno
+
+    #fileName = u'A000050_경방_T'
+    try :
+        #historyFile = open( fileName, 'r')
+        historyFile = codecs.open( fileName, 'r', 'utf-8' )
+    except BaseException as e :
+        print 'BaseException'
+        print e.errno
+        print e.strerror
+        print e
+        return
+    except IOError as e :
+        print 'IOError'
+        print 'e : ', e
+        print 'errno : ', e.errno
+        print 'err code : ', errno.errorcode[e.errno]
+        print 'err message : ', e.strerror
+        print 'err message : ', os.strerror(e.errno)
+        print 'failed to open \'%s\' file.'%(fileName)
+        return
+
     print historyFile.name
     print historyFile.closed
     print historyFile.mode
@@ -28,6 +134,9 @@ def test() :
 
     historyFile.close()
 
+def test() :
+    #test_read_file(u'A000050_경방_T')
+    test_cxFile()
 
 def collect_and_show_garbage() :
 	"Show what garbage is present."

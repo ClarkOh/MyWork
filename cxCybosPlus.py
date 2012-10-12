@@ -4175,7 +4175,7 @@ def test() :
 def getCybosPlusClassDic( errLog = None ) :
     import sys
     import inspect
-    from cxError import convert2unicode
+    from cxError import UNI 
 
     classList = [ ( className, classObj ) \
                   for className, classObj \
@@ -4191,7 +4191,7 @@ def getCybosPlusClassDic( errLog = None ) :
         except TypeError as e :
             if errLog != None : 
                 print 'e.message', e.message
-                errLog.write(u'%s : %s'%(className, convert2unicode(e.message)))
+                errLog.write(u'%s : %s'%(className, UNI(e.message)))
                 continue
         except : 
             continue

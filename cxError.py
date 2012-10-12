@@ -13,30 +13,57 @@
 # ADD CODES FROM HERE
 
 import sys
+import win32console
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 """
-[unicode or None] convert2unicode( contents )
+[unicode or None] UNI( contents )
     convert the contents which is written by codec 'cp949' or 'euc-kr' to 'unicode'
     if errors, will return None
 """
 
-def convert2unicode( text ) :
+
+
+def UNI( text ) :
     if text is None : return None
     if isinstance(text, str) :
         result = u''
+        """
+        print 'stdout.encoding',sys.stdout.encoding
+        print 'stderr.encoding',sys.stderr.encoding
+        print 'Console.encoding', win32console.GetConsoleCP()
+        print 'ConsoleOutput.encoding', win32console.GetConsoleOutputCP()
+        """
+        #try : result = unicode(text, sys.stderr.encoding).encode('utf8')
+        #try : result = unicode(text, sys.stderr.encoding).encode('utf8')
+        #try : result = unicode(text, 'euc-kr').encode('utf8')
+        #try : result = unicode(text, 'mbcs').encode('cp949')
+        #try : result = unicode(text, 'cp949').encode('utf8')
+        try : result = text.decode('utf-8')
+        except BaseException as e :
+            try : result = text.decode(sys.stdout.encoding)
+            except BaseException as e :
+                return None
+        except :
+            print 'UNKNOWN ERROR OCCURED'
+            return None
+        """
         try :
             result = unicode(text, 'cp949').encode('utf8')
-        except UnicodeError :       #UnicodeEncodeError
+        except UnicodeError as e :       #UnicodeEncodeError
+            print e
             try : result = unicode(text, 'euc-kr').encode('utf8')
-            except UnicodeError :   #UnicodeEncodeError
+            except UnicodeError as e :   #UnicodeEncodeError
+                print e
                 try : result = unicode(text, 'mbcs').encode('utf8')
                 except UnicodeError :
                     return None
+        """
         return unicode(result)
     else : return unicode(text)
+
 
 class cxError(Exception) :
     code        = None
@@ -50,15 +77,15 @@ class cxError(Exception) :
         tmpMore     = u''
 
         if category != None :
-            tmpCategory = convert2unicode(category)
+            tmpCategory = UNI(category)
             if tmpCategory == None : 
                 tmpCategory = u''
         if desc != None :
-            tmpDesc = convert2unicode(desc)
+            tmpDesc = UNI(desc)
             if tmpDesc == None : 
                 tmpDesc = u''
         if detail_desc != None :
-            tmpMore = convert2unicode(detail_desc)
+            tmpMore = UNI(detail_desc)
             if tmpMore == None : 
                 tmpMore = u''
 

@@ -30,7 +30,7 @@ class cxStockMgr :
         try :
             cpStockCode = cxCpStockCode()
         except : return -1
-        stockNum = cpStockCode.GetCount() + 1 
+        stockNum = cpStockCode.GetCount()
         for i in range( 0, stockNum ) :
             stockItem = []
             stockItem.append( cpStockCode.GetData( 0, i ) )     # stockCode
@@ -60,13 +60,16 @@ class cxStockMgr :
 
 
 def test() :
+    from cxFile import cxFile
+    resultFile = cxFile()
     stockMgr = cxStockMgr()
 
     if stockMgr.update() > 0 :
-        print stockMgr.dump()
-        for result in stockMgr.searchStockCode( u'삼성' )   :
-            print result[0], result[1] 
+        resultFile.write(stockMgr.dump())
+        #for result in stockMgr.searchStockCode( u'삼성' )   :
+        #    print result[0], result[1] 
 
+    resultFile.close()
     del stockMgr
 
 
