@@ -14,7 +14,7 @@
 
 """
 void            findCodecName           ( text )
-dateTimeString  getToday       ( void )
+dateTimeString  getToday                ( void )
 resultString    getHeaderResultString   ( headerList, titleOption )
 resultString    getDataResultString     ( dataList, titleOption )
 void            dumpResult              ( resultList )
@@ -27,7 +27,7 @@ resultList      templateBlockRequest    ( obj, paramList, resultFile, errLog )
 import sys
 import time
 from cxError import cxError
-
+from cxFile import cxFile
 
 def findCodecName( text, 
                    displayEncodingCodecName = sys.stdout.encoding,
@@ -122,6 +122,31 @@ def getHeaderResultString( headerList , titleOption = 0 ) :
 
     return resultString
 
+def getHeaderResultStringLandscape( headerList, titleOption = 0 ) :
+
+    resultString = u''
+    if headerList == None : return resultString
+    if isinstance(headerList, list) :
+        headerDic = headerList[0] 
+        if titleOption != 0 :       # title
+            for key in headerDic.keys() :
+                resultString += u'%s\t'%(headerDic[key][1])
+            resultString += u'\n'
+
+        for key in headerDic.keys() :
+            value = headerDic[key][2]
+            if type(value) == tuple :
+                #resultString += u'%s\t'%(value[0])
+                for tupleValue in value :
+                    resultString += u'%s,'%(tupleValue)
+                resultString += u'\t'
+            else :
+                resultString += u'%s\t'%(headerDic[key][2])
+        resultString += u'\n'
+
+    return resultString
+
+
 
 def getDataResultString( dataList , titleOption = 0 ) :
 
@@ -151,6 +176,42 @@ def getDataResultString( dataList , titleOption = 0 ) :
 
     return resultString
 
+def getDataResultStringLandscape( dataList, titleOption = 0 ) :
+    resultString = u''
+    if dataList == None : return resultString
+    if isinstance(dataList, list) :
+        if titleOption != 0 :
+            dataDic = dataList[0]
+            for key in dataDic.keys() :
+                resultString += u'%s\t'%(dataDic[key][1])
+            resultString += u'\n'
+
+        for dataDic in dataList :
+            for key in dataDic.keys() :
+                resultString += u'%s\t'%(dataDic[key][2])
+            resultString += u'\n'
+
+    return resultString
+
+def getResultStringLandscape( resultList, 
+                              statusOption = 0, 
+                              headerValue = 0, 
+                              dataValue = 0,
+                              titleOption = 0 ) :
+    resultString = u''
+    if statusOption != 0 :
+        if titleOption != 0 :
+            resultString += u'GetDibStatus\tGetDibMsg1\tContinue\tTime\tClass Name\n'
+        resultString += u'%s\t%s\t%s\t%s\t%s\n'%( resultList[0],resultList[1],
+                                                  resultList[2],resultList[3],resultList[4])
+
+    if headerValue != 0 :
+        resultString += getHeaderResultStringLandscape( resultList[5], titleOption )
+
+    if dataValue != 0 :
+        resultString += getDataResultStringLandscape( resultList[6], titleOption )
+
+    return resultString
 
 def dumpResult( resultList ) :
 
@@ -218,7 +279,7 @@ def templateBlockRequest( obj, paramList, resultFile = None, errLog = sys.stderr
         try :
             obj.BlockRequest()
         except cxError as e :
-            print e.dump()
+            #print e.dump()
             if errLog != None :
                 errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, e.desc))
             return []
@@ -247,6 +308,8 @@ def test_cxStockChart() :
     from cxLog import cxLog
    
     log = cxLog()
+    resultFile = cxFile()
+
     cpClsDic = getCybosPlusClassDic()
     className = 'cxStockChart'
 
@@ -258,39 +321,31 @@ def test_cxStockChart() :
         [ 0, u'A000660' ], # 하이닉스
         [ 1, ord('1') ],
         [ 2, 20121010 ],
-        [ 3, 20120901 ],
+        [ 3, 19920901 ],
         [ 4, len(fieldList) ],
         [ 5 ] + fieldList,
         [ 6, ord('D') ],
         [ 10, ord('3') ]
     ]
    
-    #reload(sys)
-    #sys.setdefaultencoding('utf-8')
-    #print sys.stdout.encoding
-    #print sys.getdefaultencoding()
-    #sys.stdout = cxStdOut(sys.stdout)
+    resultList = templateBlockRequest( cpClsDic[className], paramList, errLog = log )
 
-    """
-    from cxError import UNI
-    string = '안녕하세요'
-    print string
-    print unicode(string)
-    sys.stdout.write(UNI(string))
-    print type(UNI(string))
-    sys.stdout.write(UNI(string).encode(sys.stdout.encoding))
-    sys.stdout.write(string.encode(sys.stdout.encoding))
-    """
-    #import codecs
-    #sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
-
-    resultList = templateBlockRequest( cpClsDic[className], paramList, errLog = sys.stderr )
-
+    bFirst = 1
     for results in resultList :
-        log.write( getHeaderResultString(results[5],1 ) )
-        log.write( getDataResultString(results[6],1 ) )
+        resultFile.write( getResultStringLandscape( results, 
+                                                    statusOption = 0, 
+                                                    headerValue = 0, #len(results[5]), 
+                                                    dataValue = 1, #len(results[6]),
+                                                    titleOption = bFirst ) )
+        bFirst = 0
+        
+        #resultFile.write( getHeaderResultString(results[5], 1 ) )
+        #resultFile.write( '\n' )
+        #resultFile.write( getDataResultString(results[6], 1 ) )
+        
 
     log.close()
+    resultFile.close()
 
     del cpClsDic
 
@@ -330,7 +385,7 @@ if __name__ == "__main__" :
 
     test()
 
-    print "-"*79
+    print '\n',"-"*79
     print "after"
     collect_and_show_garbage()
 

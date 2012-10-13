@@ -13,7 +13,6 @@
 # ADD CODES FROM HERE
 
 import sys
-import win32console
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -38,6 +37,7 @@ def UNI( text ) :
     if isinstance(text, str) :
         result = u''
         
+        #import win32console
         #print 'stdout.encoding',sys.stdout.encoding
         #print 'stderr.encoding',sys.stderr.encoding
         #print 'Console.encoding', win32console.GetConsoleCP()

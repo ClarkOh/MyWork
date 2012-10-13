@@ -14,7 +14,6 @@
 
 import time
 import codecs
-import common
 
 class cxFile :
     hFile = None
