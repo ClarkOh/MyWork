@@ -18,6 +18,13 @@ import win32console
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+import locale
+import codecs
+
+sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
+sys.stderr = codecs.getwriter(locale.getpreferredencoding())(sys.stderr)
+
+
 """
 [unicode or None] UNI( contents )
     convert the contents which is written by codec 'cp949' or 'euc-kr' to 'unicode'
@@ -30,25 +37,29 @@ def UNI( text ) :
     if text is None : return None
     if isinstance(text, str) :
         result = u''
-        """
-        print 'stdout.encoding',sys.stdout.encoding
-        print 'stderr.encoding',sys.stderr.encoding
-        print 'Console.encoding', win32console.GetConsoleCP()
-        print 'ConsoleOutput.encoding', win32console.GetConsoleOutputCP()
-        """
+        
+        #print 'stdout.encoding',sys.stdout.encoding
+        #print 'stderr.encoding',sys.stderr.encoding
+        #print 'Console.encoding', win32console.GetConsoleCP()
+        #print 'ConsoleOutput.encoding', win32console.GetConsoleOutputCP()
+        
         #try : result = unicode(text, sys.stderr.encoding).encode('utf8')
         #try : result = unicode(text, sys.stderr.encoding).encode('utf8')
         #try : result = unicode(text, 'euc-kr').encode('utf8')
         #try : result = unicode(text, 'mbcs').encode('cp949')
         #try : result = unicode(text, 'cp949').encode('utf8')
+
         try : result = text.decode('utf-8')
         except BaseException as e :
             try : result = text.decode(sys.stdout.encoding)
             except BaseException as e :
                 return None
         except :
-            print 'UNKNOWN ERROR OCCURED'
+            print 'UNKNOWN ERROR OCCURED', sys.exc_info()[0], sys.exc_info()[1]
             return None
+
+        #print 'UNI.result', unicode(result)
+
         """
         try :
             result = unicode(text, 'cp949').encode('utf8')
@@ -93,6 +104,8 @@ class cxError(Exception) :
         self.category = tmpCategory
         self.desc = tmpDesc
         self.detail_desc = tmpMore
+
+        #print 'cxError.desc', self.desc
 
     def __del__(self) :
         pass

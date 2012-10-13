@@ -14,7 +14,7 @@
 
 """
 void            findCodecName           ( text )
-dateTimeString  getDateTimeString       ( void )
+dateTimeString  getToday       ( void )
 resultString    getHeaderResultString   ( headerList, titleOption )
 resultString    getDataResultString     ( dataList, titleOption )
 void            dumpResult              ( resultList )
@@ -27,6 +27,7 @@ resultList      templateBlockRequest    ( obj, paramList, resultFile, errLog )
 import sys
 import time
 from cxError import cxError
+
 
 def findCodecName( text, 
                    displayEncodingCodecName = sys.stdout.encoding,
@@ -89,7 +90,7 @@ def findCodecName( text,
         print '"',encodingCodec,'"','->','"',sys.stdout.encoding,'":', encodedStr
 
 
-def getDateTimeString() :
+def getToday() :
     dateTimeStr = unicode(time.strftime('%Y%m%d'))
     return dateTimeStr
 
@@ -217,6 +218,7 @@ def templateBlockRequest( obj, paramList, resultFile = None, errLog = sys.stderr
         try :
             obj.BlockRequest()
         except cxError as e :
+            print e.dump()
             if errLog != None :
                 errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, e.desc))
             return []
@@ -262,8 +264,27 @@ def test_cxStockChart() :
         [ 6, ord('D') ],
         [ 10, ord('3') ]
     ]
+   
+    #reload(sys)
+    #sys.setdefaultencoding('utf-8')
+    #print sys.stdout.encoding
+    #print sys.getdefaultencoding()
+    #sys.stdout = cxStdOut(sys.stdout)
 
-    resultList = templateBlockRequest( cpClsDic[className], paramList )
+    """
+    from cxError import UNI
+    string = '안녕하세요'
+    print string
+    print unicode(string)
+    sys.stdout.write(UNI(string))
+    print type(UNI(string))
+    sys.stdout.write(UNI(string).encode(sys.stdout.encoding))
+    sys.stdout.write(string.encode(sys.stdout.encoding))
+    """
+    #import codecs
+    #sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
+    resultList = templateBlockRequest( cpClsDic[className], paramList, errLog = sys.stderr )
 
     for results in resultList :
         log.write( getHeaderResultString(results[5],1 ) )
@@ -286,6 +307,7 @@ def test() :
     test_cxStockChart()
     #test_findCodecName()
     #print '안녕하세요'
+    #print UNI('안녕하세요')
 
 def collect_and_show_garbage() :
     "Show what garbage is present."

@@ -90,7 +90,7 @@ def makePyTemplate( fileName ) :
 	hFile.write('\tprint "after"\n')
 	hFile.write('\tcollect_and_show_garbage()\n\n')
 	hFile.write('\traw_input("Hit any key to close this window...")\n')
-	
+
 	hFile.close()
 	print "OK, %s is ready!" % fileName
 
