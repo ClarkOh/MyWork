@@ -58,6 +58,9 @@ class cxStockMgr :
                 resultList.append( [ self.stockList[i][0], self.stockList[i][1] ] )
         return resultList
 
+    def getStockList(self) :
+        return self.stockList
+
 
 def test() :
     from cxFile import cxFile

@@ -12,69 +12,7 @@
 
 # ADD CODES FROM HERE
 
-import sys
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
-import locale
-import codecs
-
-sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
-sys.stderr = codecs.getwriter(locale.getpreferredencoding())(sys.stderr)
-
-
-"""
-[unicode or None] UNI( contents )
-    convert the contents which is written by codec 'cp949' or 'euc-kr' to 'unicode'
-    if errors, will return None
-"""
-
-
-
-def UNI( text ) :
-    if text is None : return None
-    if isinstance(text, str) :
-        result = u''
-        
-        #import win32console
-        #print 'stdout.encoding',sys.stdout.encoding
-        #print 'stderr.encoding',sys.stderr.encoding
-        #print 'Console.encoding', win32console.GetConsoleCP()
-        #print 'ConsoleOutput.encoding', win32console.GetConsoleOutputCP()
-        
-        #try : result = unicode(text, sys.stderr.encoding).encode('utf8')
-        #try : result = unicode(text, sys.stderr.encoding).encode('utf8')
-        #try : result = unicode(text, 'euc-kr').encode('utf8')
-        #try : result = unicode(text, 'mbcs').encode('cp949')
-        #try : result = unicode(text, 'cp949').encode('utf8')
-
-        try : result = text.decode('utf-8')
-        except BaseException as e :
-            try : result = text.decode(sys.stdout.encoding)
-            except BaseException as e :
-                return None
-        except :
-            print 'UNKNOWN ERROR OCCURED', sys.exc_info()[0], sys.exc_info()[1]
-            return None
-
-        #print 'UNI.result', unicode(result)
-
-        """
-        try :
-            result = unicode(text, 'cp949').encode('utf8')
-        except UnicodeError as e :       #UnicodeEncodeError
-            print e
-            try : result = unicode(text, 'euc-kr').encode('utf8')
-            except UnicodeError as e :   #UnicodeEncodeError
-                print e
-                try : result = unicode(text, 'mbcs').encode('utf8')
-                except UnicodeError :
-                    return None
-        """
-        return unicode(result)
-    else : return unicode(text)
-
+from common import UNI
 
 class cxError(Exception) :
     code        = None

@@ -12,22 +12,90 @@
 
 # ADD CODES FROM HERE
 
+import sys
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+import locale
+import codecs
+
+sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
+sys.stderr = codecs.getwriter(locale.getpreferredencoding())(sys.stderr)
+
 """
-void            findCodecName           ( text )
-dateTimeString  getToday                ( void )
-resultString    getHeaderResultString   ( headerList, titleOption )
-resultString    getDataResultString     ( dataList, titleOption )
-void            dumpResult              ( resultList )
-titleString     getTitleString          ( titleDic )
-valueString     getValueString          ( resultList )
-[0|-1|-2]       templateSetInputValue   ( obj, paramList, errLog )
-resultList      templateBlockRequest    ( obj, paramList, resultFile, errLog )
+[unicode|None]  UNI                             ( text )
+void            findCodecName                   ( text )
+dateTimeString  getToday                        ( void )
+resultString    getHeaderResultStringPortrait   ( headerList, titleOption )
+resultString    getHeaderResultStringLandscape  ( headerList, titleOption )
+resultString    getDataResultStringPortrait     ( dataList, titleOption )
+resultString    getDataResultStringLandscape    ( dataList, titleOption )
+resultString    getResultStringPortrait         ( resultList, 
+                                                  statusOption, 
+                                                  headerValue,
+                                                  dataValue,
+                                                  titleOption )
+resultString    getResultStringLandscape        ( resultList,
+                                                  statusOption,
+                                                  headerValue,
+                                                  dataValue,
+                                                  titleOption )
+void            dumpResult                      ( resultList )
+titleString     getTitleString                  ( titleDic )
+valueString     getValueString                  ( resultList )
+[0|-1|-2]       templateSetInputValue           ( obj, paramList, errLog )
+resultList      templateBlockRequest            ( obj, paramList, resultFile, errLog )
+[True|False]    templateRequest                 ( obj, paramList, errLog )
 """
 
-import sys
-import time
-from cxError import cxError
-from cxFile import cxFile
+"""
+[unicode or None] UNI( contents )
+    convert the contents which is written by codec 'cp949' or 'euc-kr' to 'unicode'
+    if errors, will return None
+"""
+def UNI( text ) :
+    if text is None : return None
+    if isinstance(text, str) :
+        result = u''
+        
+        #import win32console
+        #print 'stdout.encoding',sys.stdout.encoding
+        #print 'stderr.encoding',sys.stderr.encoding
+        #print 'Console.encoding', win32console.GetConsoleCP()
+        #print 'ConsoleOutput.encoding', win32console.GetConsoleOutputCP()
+        
+        #try : result = unicode(text, sys.stderr.encoding).encode('utf8')
+        #try : result = unicode(text, sys.stderr.encoding).encode('utf8')
+        #try : result = unicode(text, 'euc-kr').encode('utf8')
+        #try : result = unicode(text, 'mbcs').encode('cp949')
+        #try : result = unicode(text, 'cp949').encode('utf8')
+
+        try : result = text.decode('utf-8')
+        except BaseException as e :
+            try : result = text.decode(sys.stdout.encoding)
+            except BaseException as e :
+                return None
+        except :
+            print 'UNKNOWN ERROR OCCURED', sys.exc_info()[0], sys.exc_info()[1]
+            return None
+
+        #print 'UNI.result', unicode(result)
+
+        """
+        try :
+            result = unicode(text, 'cp949').encode('utf8')
+        except UnicodeError as e :       #UnicodeEncodeError
+            print e
+            try : result = unicode(text, 'euc-kr').encode('utf8')
+            except UnicodeError as e :   #UnicodeEncodeError
+                print e
+                try : result = unicode(text, 'mbcs').encode('utf8')
+                except UnicodeError :
+                    return None
+        """
+        return unicode(result)
+    else : return unicode(text)
 
 def findCodecName( text, 
                    displayEncodingCodecName = sys.stdout.encoding,
@@ -91,6 +159,7 @@ def findCodecName( text,
 
 
 def getToday() :
+    import time
     dateTimeStr = unicode(time.strftime('%Y%m%d'))
     return dateTimeStr
 
@@ -274,6 +343,7 @@ def getValueString( resultList ) :
     return string
 
 def templateSetInputValue( obj, paramList, errLog = sys.stderr ) :
+    from cxError import cxError
 
     eCodeDic = { 'OK' : 0, 'cxError' : -1, 'UnknownError' : -2 }
 
@@ -288,27 +358,41 @@ def templateSetInputValue( obj, paramList, errLog = sys.stderr ) :
                 errLog.write(u'%s.SetInputValue : %s'%(obj.__class__.__name__, e.desc))
             return eCodeDic['cxError']
         except :
-                return eCodeDic['UnknownError']
+            if errLog != None :
+                errLog.write(u'%s.SetInputValue : %s %s'%(  obj.__class__.__name__, 
+                                                            sys.exc_info()[0],
+                                                            sys.exc_info()[1] ) )
+            return eCodeDic['UnknownError']
 
     return eCodeDic['OK']
 
 
 def templateBlockRequest( obj, paramList, resultFile = None, errLog = sys.stderr ) :
+    from cxError import cxError
 
-    if templateSetInputValue( obj, paramList, errLog ) != 0 :
-        return []
+    if templateSetInputValue( obj, paramList, errLog ) != 0 :   # cxError or UnknownError
+        return None
 
     bContinue = 1
     resultList = []
 
     while bContinue == 1 :
         try :
-            obj.BlockRequest()
+            ret = obj.BlockRequest()
         except cxError as e :
             #print e.dump()
             if errLog != None :
                 errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, e.desc))
             return []
+
+        if ret == 1 : # 1 : 통신 요청 실패
+            if errLog != None :
+                errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, u'통신 요청 실패'))
+            return None
+        elif ret == 3 : # 3 : 그외의 내부 오류
+            if errLog != None :
+                errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, u'그외의 내부 오류'))
+            return None
 
         result = obj.getResult()
         resultList.append(result)
@@ -326,6 +410,22 @@ def templateBlockRequest( obj, paramList, resultFile = None, errLog = sys.stderr
     # end of 'while bContinue == 1'
 
     return resultList
+
+
+def templateRequest( obj, paramList, errLog = sys.stderr ) :
+
+    if templateSetInputValue( obj, paramList, errLog ) != 0 :
+        return False
+    
+    try :
+        obj.Request()
+    except cxError as e :
+        if errLog != None :
+            errLog.write(u'%s.Request : %s'%(obj.__class__.__name__. e.desc))
+        return False
+
+    return True
+
 
 def testBlockRequest( clsName, paramList, 
                       statusOption, headerValue, dataValue, landscape,
@@ -389,6 +489,7 @@ def test_cxStockChart() :
 
     from cxCybosPlus import getCybosPlusClassDic        
     from cxLog import cxLog
+    from cxFile import cxFile
    
     log = cxLog()
     resultFile = cxFile()
@@ -442,6 +543,7 @@ def test_findCodecName() :
     print unicode(testStr.decode('utf-8'))
 
 def test_cpBlockRequest() :
+    from cxFile import cxFile
     
     resultFile = cxFile()
 
