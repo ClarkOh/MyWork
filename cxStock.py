@@ -13,20 +13,20 @@
 # ADD CODES FROM HERE
 
 import sys
-from cxError import convert2unicode
+from cxError import UNI
 
 class cxStock :
     def __init__(self, code = u'', name = u'', fullcode = u'') :
-        print name, type(name)
-        self.code = convert2unicode(code)
-        self.name = convert2unicode(name)
-        self.fullcode = convert2unicode(fullcode)
+        #print name, type(name)
+        self.code = UNI(code)
+        self.name = UNI(name)
+        self.fullcode = UNI(fullcode)
 
     def __del__(self) :
         pass
 
     def dump(self) :
-        dumpStr = u'%s %s \'%s\''%(self.code, self.fullcode, self.name)
+        dumpStr = u'%s %s %s'%(self.code, self.fullcode, self.name)
         return dumpStr
 
 

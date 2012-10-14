@@ -94,10 +94,11 @@ def getToday() :
     dateTimeStr = unicode(time.strftime('%Y%m%d'))
     return dateTimeStr
 
-def getHeaderResultString( headerList , titleOption = 0 ) :
+def getHeaderResultStringPortrait( headerList , titleOption = 0 ) :
 
     resultString = u''
     if headerList == None : return resultString
+    if len(headerList) == 0 : return resultString
     if isinstance(headerList, list) :
         for headerDic in headerList :
             for key in headerDic.keys() :
@@ -126,6 +127,7 @@ def getHeaderResultStringLandscape( headerList, titleOption = 0 ) :
 
     resultString = u''
     if headerList == None : return resultString
+    if len(headerList) == 0 : return resultString
     if isinstance(headerList, list) :
         headerDic = headerList[0] 
         if titleOption != 0 :       # title
@@ -148,10 +150,11 @@ def getHeaderResultStringLandscape( headerList, titleOption = 0 ) :
 
 
 
-def getDataResultString( dataList , titleOption = 0 ) :
+def getDataResultStringPortrait( dataList , titleOption = 0 ) :
 
     resultString = u''
     if dataList == None : return resultString
+    if len(dataList) == 0 : return resultString 
     if isinstance(dataList, list) :
         for dataDic in dataList :
             for key in dataDic.keys() :
@@ -179,6 +182,7 @@ def getDataResultString( dataList , titleOption = 0 ) :
 def getDataResultStringLandscape( dataList, titleOption = 0 ) :
     resultString = u''
     if dataList == None : return resultString
+    if len(dataList) == 0 : return resultString
     if isinstance(dataList, list) :
         if titleOption != 0 :
             dataDic = dataList[0]
@@ -212,6 +216,28 @@ def getResultStringLandscape( resultList,
         resultString += getDataResultStringLandscape( resultList[6], titleOption )
 
     return resultString
+
+def getResultStringPortrait( resultList,
+                             statusOption = 0,
+                             headerValue = 0,
+                             dataValue = 0,
+                             titleOption = 0 ) :
+    resultString = u''
+    if statusOption != 0 :
+        if titleOption != 0 :
+            resultString += u'GetDibStatus : %s\n'%(resultList[0])
+            resultString += u'GetDibMsg1 : %s\n'%(resultList[1])
+            resultString += u'Continue : %s\n'%(resultList[2])
+            resultString += u'Time : %s\n'%(resultList[3])
+            resultString += u'Class Name : %s\n'%(resultList[4])
+
+    if headerValue != 0 :
+        resultString += getHeaderResultStringPortrait( resultList[5], titleOption )
+    if dataValue != 0 :
+        resultString += getDataResultStringPortrait( resultList[6], titleOption )
+
+    return resultString
+
 
 def dumpResult( resultList ) :
 
@@ -301,6 +327,63 @@ def templateBlockRequest( obj, paramList, resultFile = None, errLog = sys.stderr
 
     return resultList
 
+def testBlockRequest( clsName, paramList, 
+                      statusOption, headerValue, dataValue, landscape,
+                      resultFile, errLog ) :
+
+    from cxCybosPlus import getCybosPlusClassDic
+
+    cpClsDic = getCybosPlusClassDic()
+
+    resultList = templateBlockRequest( cpClsDic[clsName], paramList )
+
+    bFirst = 1
+
+    for results in resultList :
+        if landscape != 0 :
+            resultFile.write( getResultStringLandscape( results,
+                                                        statusOption,
+                                                        headerValue,
+                                                        dataValue,
+                                                        titleOption = bFirst ) )
+        else :
+            resultFile.write( getResultStringPortrait( results,
+                                                       statusOption,
+                                                       headerValue,
+                                                       dataValue,
+                                                       titleOption = bFirst ) )
+        bFirst = 0
+
+    del cpClsDic
+
+
+def test_cxStockMst() :
+    from cxCybosPlus import getCybosPlusClassDic
+    #from cxLog import cxLog
+
+    #log = cxLog()
+    #resultFile = cxFile()
+
+    cpClsDic = getCybosPlusClassDic()
+    className = 'cxCpStockMst'
+
+    paramList = [
+        [ 0, 'A000660' ],
+    ]
+
+    resultList = templateBlockRequest( cpClsDic[className], paramList )
+
+    bFirst = 1
+
+    for results in resultList :
+        print getResultStringLandscape( results,
+                                        statusOption = 1,
+                                        headerValue = 1,
+                                        dataValue = 1,
+                                        titleOption = bFirst )
+        bFirst = 0
+
+    del cpClsDic
 
 def test_cxStockChart() :
 
@@ -358,8 +441,23 @@ def test_findCodecName() :
     print testStr
     print unicode(testStr.decode('utf-8'))
 
+def test_cpBlockRequest() :
+    
+    resultFile = cxFile()
+
+    paramList = [
+        [ 0, 'A000660'],
+    ]
+
+    testBlockRequest( 'cxCpStockMst', paramList, 1, 1, 1, 0, resultFile, sys.stderr )
+
+    resultFile.close()
+
+
 def test() :
-    test_cxStockChart()
+    #test_cxStockChart()
+    #test_cxStockMst()
+    test_cpBlockRequest()
     #test_findCodecName()
     #print '안녕하세요'
     #print UNI('안녕하세요')
