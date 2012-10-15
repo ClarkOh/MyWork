@@ -22,8 +22,8 @@ def test_getStockDayData() :
 
     #stockCode = u'A000660'  #하이닉스
     #stockCode = u'A005930'  #삼성전자
-    #stockCode = u'A005380'  #현대자동차
-    stockCode = u'A004990'  #롯데제과
+    stockCode = u'A005380'  #현대자동차
+    #stockCode = u'A004990'  #롯데제과
     chartType = u'D'
  
     cpStockCode = cxCpStockCode()
@@ -33,7 +33,7 @@ def test_getStockDayData() :
 
     fileName = u'%s_%s_%s.log'%(stockCode, stockName, chartType)
 
-    refreshLog = 1
+    refreshLog = 1 
     
     if refreshLog == 1 :
 
@@ -119,7 +119,7 @@ def test_getStockDayData() :
                                                                       avr,
                                                                       minValue,
                                                                       maxValue))
-        if currentValue > maxValue :
+        if (currentValue > maxValue) and (flagBuy == False) :
             resultFile.write(u'BUY at cv:%d for mv:%d in bm:%d (em:%d, bc:%d)\n'%( currentValue, 
                                                                 maxValue, 
                                                                 buyedMoney,
@@ -130,12 +130,12 @@ def test_getStockDayData() :
             buyCount += 1
             maxBuyedMoney = max(maxBuyedMoney, buyedMoney)
         elif flagBuy == True and currentValue < minValue :
+            earningMoney += (currentValue*buyCount)-buyedMoney
             resultFile.write(u'SELL at cv:%d for mv:%d in bm:%d (em:%d, bc:%d)\n'%( currentValue, 
                                                                  minValue, 
                                                                  buyedMoney,
                                                                  earningMoney,
                                                                  buyCount))
-            earningMoney += (currentValue*buyCount)-buyedMoney
             flagBuy = False
             buyCount = 0
             buyedMoney = 0

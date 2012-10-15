@@ -61,8 +61,15 @@ class cxStockMgr :
     def getStockList(self) :
         return self.stockList
 
+def test_findStock() :
+    stockMgr = cxStockMgr()
+    if stockMgr.update() > 0 :
+        for result in stockMgr.searchStockCode( u'현대') :
+            print result[0], result[1]
 
-def test() :
+    del stockMgr
+
+def test_01() :
     from cxFile import cxFile
     resultFile = cxFile()
     stockMgr = cxStockMgr()
@@ -74,6 +81,9 @@ def test() :
 
     resultFile.close()
     del stockMgr
+
+def test() :
+    test_findStock()
 
 
 def collect_and_show_garbage() :
