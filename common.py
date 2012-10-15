@@ -371,6 +371,7 @@ def templateBlockRequest( obj, paramList, resultFile = None, errLog = sys.stderr
     from cxError import cxError
 
     if templateSetInputValue( obj, paramList, errLog ) != 0 :   # cxError or UnknownError
+        errLog.write(u'templateSetInputValue.cxError occured\n')
         return None
 
     bContinue = 1
@@ -429,7 +430,7 @@ def templateRequest( obj, paramList, errLog = sys.stderr ) :
 
 def testBlockRequest( clsName, paramList, 
                       statusOption, headerValue, dataValue, landscape,
-                      resultFile, errLog ) :
+                      resultFile = sys.stdout, errLog = sys.stderr ) :
 
     from cxCybosPlus import getCybosPlusClassDic
 
@@ -438,6 +439,10 @@ def testBlockRequest( clsName, paramList,
     resultList = templateBlockRequest( cpClsDic[clsName], paramList )
 
     bFirst = 1
+
+    if resultList == None :
+        del cpClsDic
+        return
 
     for results in resultList :
         if landscape != 0 :
