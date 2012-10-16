@@ -13,6 +13,97 @@
 # ADD CODES FROM HERE
 
 from common         import testBlockRequest
+from cxCybosPlus    import getCybosPlusClassDic
+from cxFile         import cxFile
+
+class cxEmulator :
+    cpClsDic = getCybosPlusClassDic() 
+
+    def __init__(self) :
+        pass
+    
+    def __del__(self) :
+        pass
+
+    def makeLogData(self, stockCode, chartType ) :
+
+        chartTypeDic = {
+            'Day'       : 'D',
+            'Week'      : 'W',
+            'Month'     : 'M',
+            'Minute'    : 'm',
+            'Tick'      : 'T'
+        }
+
+        try :
+            ct = chartTypeDic[chartType]
+        except KeyError :
+            print 'ERROR: cxEmulator.makeLogData : param chartType : "%s" is not valid.\n'%\
+                    (chartType) 
+            return False
+
+        fieldList = [ 
+            0, # 날짜
+            3, # 고가
+            4, # 저가
+            5, # 종가
+            8, # 거래량
+            9, # 거래대금
+            25, # 주식회전율
+        ]
+
+        if ct == 'T' or ct == 'm' :
+            fieldList += [1]  # 시간 - hhmm
+
+        paramList = [
+            [ 0,    stockCode       ],
+            [ 1,    ord(u'1')       ],  # 기간요청
+            [ 3,    19500101        ],
+            [ 4,    len(fieldList)  ],
+            [ 5 ] + fieldList,
+            [ 6,    ord(ct)         ],  # 차트종류
+            [ 9,    ord(u'1')       ],  # 수정주가
+            [ 10,   ord(u'3')       ]   # 시간외거래량 모두 제외
+        ]
+
+        stockChart = getCybosPlusDic[u'cxStockChart']
+
+        resultList = templateBlockRequest( stockChart, paramList )
+
+        for result in resultList :
+            if getResultDibStatus(result) != 0 :
+                break
+            # TODO : BEGIN FROM HERE
+            
+
+        cpStockCode = self.cpClsDic['cxCpStockCode']
+
+        stockName = cpStockCode.CodeToName(stockCode)
+        #print '"%s"'%(stockName)
+        if stockName == u'' :
+            print 'Can not find stock name for stock code "%s".'%(stockCode)
+            return
+
+        path = 'log\\%s\\'%(chartType.lower())
+
+        fileName = u'%s%s_%s.log'%(path,stockCode,stockName)
+
+        print fileName 
+
+        dataFile = cxFile(fileName)
+
+        testBlockRequest(u'cxStockChart', paramList, 0, 0, 1, 1, dataFile)
+
+        dataFile.close()
+
+
+def test_cxEmulator() :
+
+    emul = cxEmulator()
+
+    emul.makeLogData(u'A000660',u'Day')
+    #emul.makeLogData(u'001',u'Day')
+
 
 def test_getStockDayData() :
 
@@ -24,12 +115,12 @@ def test_getStockDayData() :
     #stockCode = u'A005930'  #삼성전자
     stockCode = u'A005380'  #현대자동차
     #stockCode = u'A004990'  #롯데제과
-    chartType = u'D'
- 
+
     cpStockCode = cxCpStockCode()
 
     stockName = cpStockCode.CodeToName(stockCode)
 
+    chartType = u'D'
 
     fileName = u'%s_%s_%s.log'%(stockCode, stockName, chartType)
 
@@ -152,7 +243,8 @@ def test_getStockDayData() :
     print
 
 def test() :
-    test_getStockDayData()
+    #test_getStockDayData()
+    test_cxEmulator()
 
 def collect_and_show_garbage() :
 	"Show what garbage is present."

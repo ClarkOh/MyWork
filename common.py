@@ -286,6 +286,22 @@ def getResultStringLandscape( resultList,
 
     return resultString
 
+def getResultDibStatus(result) :
+    return result[0]
+
+def getResultDibMsg1(result) :
+    return result[1]
+
+def getResultContinue(result) :
+    return result[2]
+
+def getResultTime(result) :
+    return result[3]
+
+def getResultClassName(result) :
+    return result[4]
+
+
 def getResultStringPortrait( resultList,
                              statusOption = 0,
                              headerValue = 0,
@@ -378,13 +394,16 @@ def templateBlockRequest( obj, paramList, resultFile = None, errLog = sys.stderr
     resultList = []
 
     while bContinue == 1 :
+        #ret = obj.BlockRequest()
+        
         try :
             ret = obj.BlockRequest()
         except cxError as e :
-            #print e.dump()
+            print e.dump()
             if errLog != None :
                 errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, e.desc))
             return []
+        
 
         if ret == 1 : # 1 : 통신 요청 실패
             if errLog != None :
