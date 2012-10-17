@@ -75,6 +75,18 @@ class cxFile :
         self.hFile.seek(0,0)
         return self.hFile.readlines()
 
+    def readline(self) :
+        if self.hFile == None :
+            self.open(mode = 'r')
+        elif self.hFile.closed == True :
+            try : self.open(mode = 'r')
+            except : return []
+        elif self.hFile.closed == False and self.hFile.mode[0] != 'r' :
+            self.close()
+            try : self.open(mode = 'r')
+            except : return []
+        return self.hFile.readline()
+
     def dump(self) :
         for line in self.readlines() :
             print line,

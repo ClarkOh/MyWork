@@ -371,11 +371,13 @@ def templateSetInputValue( obj, paramList, errLog = sys.stderr ) :
                 obj.SetInputValue( param[0], param[1] )
         except cxError as e :
             if errLog != None :
-                errLog.write(u'%s.SetInputValue : %s'%(obj.__class__.__name__, e.desc))
+                errLog.write(u'%s.SetInputValue : %s : %s\n'%(obj.__class__.__name__, 
+                                                            e.desc,
+                                                            e.detail_desc))
             return eCodeDic['cxError']
         except :
             if errLog != None :
-                errLog.write(u'%s.SetInputValue : %s %s'%(  obj.__class__.__name__, 
+                errLog.write(u'%s.SetInputValue : %s %s\n'%(  obj.__class__.__name__, 
                                                             sys.exc_info()[0],
                                                             sys.exc_info()[1] ) )
             return eCodeDic['UnknownError']
@@ -399,20 +401,22 @@ def templateBlockRequest( obj, paramList, resultFile = None, errLog = sys.stderr
         try :
             ret = obj.BlockRequest()
         except cxError as e :
-            print e.dump()
+            #print e.dump()
             if errLog != None :
-                errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, e.desc))
-            return []
+                errLog.write(u'%s.BlockRequest : %s : %s\n'%(obj.__class__.__name__, 
+                                                           e.desc,
+                                                           e.detail_desc))
+            return resultList
         
 
         if ret == 1 : # 1 : 통신 요청 실패
             if errLog != None :
-                errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, u'통신 요청 실패'))
-            return None
+                errLog.write(u'%s.BlockRequest : %s\n'%(obj.__class__.__name__, u'통신 요청 실패'))
+            return resultList
         elif ret == 3 : # 3 : 그외의 내부 오류
             if errLog != None :
-                errLog.write(u'%s.BlockRequest : %s'%(obj.__class__.__name__, u'그외의 내부 오류'))
-            return None
+                errLog.write(u'%s.BlockRequest : %s\n'%(obj.__class__.__name__, u'그외의 내부 오류'))
+            return resultList
 
         result = obj.getResult()
         resultList.append(result)
@@ -441,7 +445,9 @@ def templateRequest( obj, paramList, errLog = sys.stderr ) :
         obj.Request()
     except cxError as e :
         if errLog != None :
-            errLog.write(u'%s.Request : %s'%(obj.__class__.__name__. e.desc))
+            errLog.write(u'%s.Request : %s : %s\n'%( obj.__class__.__name__. 
+                                                    e.desc,
+                                                    e.detail_desc ))
         return False
 
     return True

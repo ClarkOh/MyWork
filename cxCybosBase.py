@@ -249,7 +249,10 @@ class cxCybosBaseWithEvent :
             try:
                 return self.com_cp.BlockRequest()
             except pythoncom.com_error, (hr, msg, exc, arg) :
-                raise cxError(hr,'COM',msg,'check the connection and support of this method \"BlockRequest\"')
+                #print 'exc', exc
+                #print 'exc[2]', exc[2]
+                #print 'arg', arg
+                raise cxError(hr,'COM',msg,'\"BlockRequest\":%s'%(exc[2]))
         else :
             raise cxError(10,'cxCybosBaseWithEvent','com_cp is None','')
 
