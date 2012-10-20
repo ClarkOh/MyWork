@@ -487,6 +487,17 @@ def testBlockRequest( clsName, paramList,
     del cpClsDic
 
 
+def checkFileExist( pathFileName ) :
+
+    try :
+        hFile = open(pathFileName,'r')
+    except BaseException as e :
+        print e
+        return False
+
+    hFile.close()
+    return True
+
 def test_cxStockMst() :
     from cxCybosPlus import getCybosPlusClassDic
     #from cxLog import cxLog

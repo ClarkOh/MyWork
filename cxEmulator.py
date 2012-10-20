@@ -19,6 +19,7 @@ from common         import getResultDibMsg1
 from common         import getResultContinue
 from common         import getResultTime
 from common         import getResultClassName
+from common         import checkFileExist
 from cxCybosPlus    import getCybosPlusClassDic
 from cxFile         import cxFile
 
@@ -58,7 +59,7 @@ class cxEmulator :
         for i in range( 20, dataListLen ) :
             data = dataList[i]
             date = data[0]
-            currentValue = int(data[3])
+            currentValue = int(data[4])
             avr = 0
             total = 0
             maxValue = 0
@@ -104,9 +105,9 @@ class cxEmulator :
                                             float(earningMoney)/float(maxBuyedMoney)*(100.0)))
         resultFile.write(u'%s~%s:%d~%d(%d)\n'%( dataList[0][0],
                                             dataList[dataListLen-1][0],
-                                            int(dataList[0][3]),
-                                            int(dataList[dataListLen-1][3]),
-                                int(int(dataList[dataListLen-1][3])/int(dataList[0][3]))))
+                                            int(dataList[0][4]),
+                                            int(dataList[dataListLen-1][4]),
+                                int(int(dataList[dataListLen-1][4])/int(dataList[0][4]))))
         resultFile.write(desc)
         resultFile.close()
         print
@@ -503,7 +504,7 @@ class cxEmulator :
         except KeyError :
             print 'ERROR: cxEmulator.loadLogData : param chartType : "%s" is not valid.\n'%\
                     (chartType) 
-            return False
+            return None
 
         cpStockCode = self.cpClsDic['cxCpStockCode']
 
@@ -518,6 +519,8 @@ class cxEmulator :
         fileName = u'%s%s_%s.log'%(path,stockCode,stockName)
 
         print fileName 
+
+        if checkFileExist(fileName) == False : return None
 
         dataFile = cxFile(fileName)
 
@@ -535,14 +538,13 @@ class cxEmulator :
         dataFile.close()
         del dataFile
 
-        print 'len of dataList', len(dataList) 
-        print dataList[0]
-        print dataList[len(dataList)-1]
+        #print 'len of dataList', len(dataList) 
+        #print dataList[0]
+        #print dataList[len(dataList)-1]
         return dataList
 
 
     def makeLogData(self, stockCode, chartType ) :
-
 
         try :
             ct = self.chartTypeDic[chartType]
@@ -553,6 +555,7 @@ class cxEmulator :
 
         fieldList = [ 
             0, # 날짜
+            1, # 시간
             3, # 고가
             4, # 저가
             5, # 종가
@@ -561,8 +564,8 @@ class cxEmulator :
             25, # 주식회전율
         ]
 
-        if ct == 'T' or ct == 'm' :
-            fieldList += [1]  # 시간 - hhmm
+        #if ct == 'T' or ct == 'm' :
+        #    fieldList += [1]  # 시간 - hhmm
 
         paramList = [
             [ 0,    stockCode       ],
@@ -682,14 +685,14 @@ def test_cxEmulator() :
     emul = cxEmulator()
 
     stockCode = u'A000660'
-    #emul.makeLogData(stockCode,u'Day')
-    dataList = emul.loadLogData(stockCode,u'Day')
+    emul.makeLogData(stockCode,u'Day')
+    #dataList = emul.loadLogData(stockCode,u'Day')
     #emul.testStrategy001(dataList)
     #emul.testStrategy002(dataList)
     #emul.testStrategy003(dataList)
     #emul.testStrategy004(dataList)
     #emul.testStrategy005(dataList)
-    emul.testStrategy006(dataList)
+    #emul.testStrategy006(dataList)
 
     #emul.makeLogData(u'001',u'Day')
 
