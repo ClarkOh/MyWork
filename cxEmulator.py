@@ -21,7 +21,9 @@ from common         import getResultTime
 from common         import getResultClassName
 from common         import checkFileExist
 from cxCybosPlus    import getCybosPlusClassDic
+from cxCybosPlus    import constants
 from cxFile         import cxFile
+import time
 
 class cxEmulator :
     chartTypeDic = {
@@ -33,6 +35,7 @@ class cxEmulator :
     }
 
     cpClsDic = getCybosPlusClassDic() 
+    failedList = []
 
     def __init__(self) :
         pass
@@ -546,6 +549,21 @@ class cxEmulator :
 
     def makeLogData(self, stockCode, chartType ) :
 
+        cpStockCode = self.cpClsDic['cxCpStockCode']
+
+        stockName = cpStockCode.CodeToName(stockCode)
+        #print '"%s"'%(stockName)
+        if stockName == u'' :
+            print 'Can not find stock name for stock code "%s".'%(stockCode)
+            return False
+
+        path = 'log\\%s\\'%(chartType.lower())
+
+        fileName = u'%s%s_%s.log'%(path,stockCode,stockName)
+
+        if checkFileExist(fileName) == True :
+            return True
+
         try :
             ct = self.chartTypeDic[chartType]
         except KeyError :
@@ -621,6 +639,12 @@ class cxEmulator :
             dataList = result[6]
             print 'len of dataList', len(dataList)
 
+            if len(dataList) == 0 : 
+                print 'failed to make data list for %s'%(stockCode)
+                self.failedList.append([stockCode,chartType])
+                return True
+                #return False
+
             tmpList = []
             for dataDic in dataList :
                 tmpList = [] 
@@ -645,17 +669,6 @@ class cxEmulator :
         [5] ~ : data
         """
 
-        cpStockCode = self.cpClsDic['cxCpStockCode']
-
-        stockName = cpStockCode.CodeToName(stockCode)
-        #print '"%s"'%(stockName)
-        if stockName == u'' :
-            print 'Can not find stock name for stock code "%s".'%(stockCode)
-            return
-
-        path = 'log\\%s\\'%(chartType.lower())
-
-        fileName = u'%s%s_%s.log'%(path,stockCode,stockName)
 
         print fileName 
 
@@ -679,13 +692,43 @@ class cxEmulator :
         dataFile.close()
         del dataFile
 
+        return True
+
+    def makeAllStockLogData(self) :
+        from cxStockMgr import cxStockMgr
+        from cxCybosPlus    import cxCpCybos
+
+        cpCybos = cxCpCybos()
+        stockMgr = cxStockMgr()
+
+        stockListLen = stockMgr.update()
+        if stockListLen == 0 :
+            print 'cxStockMgr.update : error occured.'
+            return
+        print 'stockListLen : ', stockListLen
+
+        for stock in stockMgr.stockList :
+            for option in ['Day','Minute','Tick'] :
+                if self.makeLogData(stock[0], option) == False :
+                    print '%s\t%s : makeLogData for %s : failed'%(stock[0],stock[1],option)
+                    return
+                    
+                remainCount = cpCybos.GetLimitRemainCount(constants.LT_NONTRADE_REQUEST)
+                remainTime = cpCybos.LimitRequestRemainTime()
+                print 'remainCount : %d, remainTime : %d'%(remainCount,remainTime)
+                if remainCount <= 1 :
+                    print 'time.sleep for %d'%(remainTime)
+                    time.sleep(remainTime)
+
+
 
 def test_cxEmulator() :
 
     emul = cxEmulator()
 
-    stockCode = u'A000660'
-    emul.makeLogData(stockCode,u'Day')
+    emul.makeAllStockLogData()
+    #stockCode = u'A000660'
+    #emul.makeLogData(stockCode,u'Day')
     #dataList = emul.loadLogData(stockCode,u'Day')
     #emul.testStrategy001(dataList)
     #emul.testStrategy002(dataList)
@@ -695,6 +738,10 @@ def test_cxEmulator() :
     #emul.testStrategy006(dataList)
 
     #emul.makeLogData(u'001',u'Day')
+
+    for failedItem in emul.failedList :
+        print '[',failedItem[0],failedItem[1],']'
+    print
 
 
 def test_getStockDayData() :

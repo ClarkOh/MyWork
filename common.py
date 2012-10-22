@@ -492,7 +492,7 @@ def checkFileExist( pathFileName ) :
     try :
         hFile = open(pathFileName,'r')
     except BaseException as e :
-        print e
+        #print e
         return False
 
     hFile.close()
