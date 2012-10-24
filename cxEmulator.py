@@ -722,26 +722,6 @@ class cxEmulator :
 
 
 
-def test_cxEmulator() :
-
-    emul = cxEmulator()
-
-    emul.makeAllStockLogData()
-    #stockCode = u'A000660'
-    #emul.makeLogData(stockCode,u'Day')
-    #dataList = emul.loadLogData(stockCode,u'Day')
-    #emul.testStrategy001(dataList)
-    #emul.testStrategy002(dataList)
-    #emul.testStrategy003(dataList)
-    #emul.testStrategy004(dataList)
-    #emul.testStrategy005(dataList)
-    #emul.testStrategy006(dataList)
-
-    #emul.makeLogData(u'001',u'Day')
-
-    for failedItem in emul.failedList :
-        print '[',failedItem[0],failedItem[1],']'
-    print
 
 
 def test_getStockDayData() :
@@ -880,6 +860,156 @@ def test_getStockDayData() :
                                             int(int(dataLog[0][1])/int(dataLog[dataLogLen-1][1]))))
 
     print
+
+def emulateTurtleTrade( dataList ) :
+
+    import math
+
+    avrNparam    = 20       # 평균 N            : 20 일 평균 N
+    totalAccount = 5000000  # 초기 전체 투자금  : 500만원
+    unitRatio    = 0.02     # Unit 비율         : 거래당 최대 손실 한도 비율 : 전체 투자금의 2%
+    S1_entry     = 20       # S1 진입 조건      : 20일 최고가
+    S1_exit      = 10       # S1 탈출 조건      : 10일 최저가
+    S2_entry     = 55       # S2 진입 조건      : 55일 최고가
+    S2_exit      = 20       # S2 탈출 조건      : 20일 최저가
+    absExitRatio = 2.0      # 절대 exit 조건    : absExitRatio * N : 2N
+
+    print 'data length :', len(dataList)
+
+#    dataNum = len(dataList)
+    dataNum = 22
+
+    turtleDataList = []
+    N_List = []
+
+    N = 0
+
+    for i in range(0, dataNum) :
+        TR1 = 0
+        TR2 = 0
+        TR3 = 0
+        N = 0
+        
+        # 오늘의 고가 - 오늘의 저가
+        TR1 = float(int(dataList[i][2]) - int(dataList[i][3]))   
+        if i >= 1 :
+            # 어제의 종가 - 오늘의 고가
+            TR2 = math.fabs(int(dataList[i-1][4]) - int(dataList[i][2])) 
+            # 어제의 종가 - 오늘의 저가
+            TR3 = math.fabs(int(dataList[i-1][4]) - int(dataList[i][3])) 
+
+        N_List.append( max(TR1,TR2,TR3) )
+
+        if i >= avrNparam :
+            N = 0
+            for k in range(i - avrNparam,i) :
+                N += N_List[k]
+            N = float(N/float(avrNparam))
+        #print i,
+        #for j in range(0,5) :
+        #    print dataList[i][j],
+        #print TR1,TR2,TR3,N_List[i],N
+        turtleDataList.append( [ dataList[i][0],        # 0 : 년도월일.
+                                 int(dataList[i][2]),   # 1 : 고가
+                                 int(dataList[i][3]),   # 2 : 저가
+                                 int(dataList[i][4]),   # 3 : 종가
+                                 TR1,                   # 4 : 오늘 고가 - 오늘 저가
+                                 TR2,                   # 5 : 어제 종가 - 오늘 고가
+                                 TR3,                   # 6 : 어제 종가 - 오늘 저가
+                                 max(TR1,TR2,TR3),      # 7 : 오늘의 N
+                                 N                      # 8 : 오늘의 20일 평균 N
+                               ] )
+    #print
+
+    i = 0
+    for item in turtleDataList :
+        print i,item
+        i += 1
+    print
+    
+    initUnit = totalAccount*unitRatio
+    S1_entry_value = 0
+    S1_exit_value = totalAccount    # very very big money
+    S2_entry_value = 0
+    S2_exit_value = totalAccount    # very very big money
+
+    for today in range(0,len(turtleDataList)) :     # 매일
+
+        S1_entry_value = 0
+        S1_exit_value = totalAccount    # very very big money
+        S2_entry_value = 0
+        S2_exit_value = totalAccount    # very very big money
+
+        if today >= S1_entry :          # 20일 최고가
+            for i in range( today - S1_entry, today ) :
+                S1_entry_value = max(S1_entry_value, turtleDataList[i][1])
+        if today >= S1_exit :           # 10일 최저가
+            for i in range( today - S1_exit, today ) :
+                S1_exit_value = min(S1_exit_value, turtleDataList[i][2])
+        if today >= S2_entry :          # 55일 최고가
+            for i in range( today - S2_entry, today ) :
+                S2_entry_value = max(S2_entry_value, turtleDataList[i][1])
+        if today >= S2_exit :           # 20일 최저가
+            for i in range( today - S2_exit, today ) :
+                S2_exit_value = min(S2_exit_value, turtleDataList[i][2])
+       
+        todayPrice = turtleDataList[today][3]
+
+        if todayPrice > S1_entry_value :    
+            # 20일 최고가 상향 돌파
+            if flagSkip == True :           
+                # 이전 신호로 이득보았기에 Skip하되 다음 번은 Skip안함
+                flagSkip = False 
+            else if flagBuyed == False :    
+                # 안 산 상태에서 20일 최고가 상향 돌파하였기에 entry한다.
+                flagBuyed = True
+                # 
+
+        else if todayPrice < S1_exit_value and flagBuyed == True :
+            # 산 상태에서 10일 최저가 하향 돌파하기에 exit한다.
+            flagBuyed = False
+
+        else if todayPrice > S2_entry_value and flagBuyed == False :
+            # 안 산 상태에서 55일 최고가 상향 돌파하기에 entry한다. 
+            # big trend filter
+            flagBuyed = True
+
+        else if todayPrice < S2_entry_value and flagBuyed == True :
+            # 산 상태에서 20일 최저가 하향 돌파하였기에 exit한다.
+            flagBuyed = False
+        
+        if flagBuyed == True and todayPrice <= absExitRatio*buyedMoney :    
+            # 산 상태에서 손실액이 2N이 넘으므로 무조건 exit한다.
+            flagBuyed = False
+
+
+
+
+    
+
+
+def test_cxEmulator() :
+
+    emul = cxEmulator()
+
+    #emul.makeAllStockLogData()
+    stockCode = u'A000660'
+    #emul.makeLogData(stockCode,u'Day')
+    dataList = emul.loadLogData(stockCode,u'Day')
+
+    emulateTurtleTrade(dataList)
+    #emul.testStrategy001(dataList)
+    #emul.testStrategy002(dataList)
+    #emul.testStrategy003(dataList)
+    #emul.testStrategy004(dataList)
+    #emul.testStrategy005(dataList)
+    #emul.testStrategy006(dataList)
+
+    #emul.makeLogData(u'001',u'Day')
+    
+    #for failedItem in emul.failedList :
+    #    print '[',failedItem[0],failedItem[1],']'
+    #print
 
 def test() :
     #test_getStockDayData()
